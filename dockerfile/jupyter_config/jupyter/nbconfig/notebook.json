@@ -1,0 +1,112 @@
+{
+  "load_extensions": {
+    "jupyter-js-widgets/extension": true,
+    "nbextensions_configurator/config_menu/main": true,
+    "contrib_nbextensions_help_item/main": true,
+    "plotlywidget/extension": true,
+    "vim_binding/vim_binding": true,
+    "execute_time/ExecuteTime": false,
+    "snippets_menu/main": true,
+    "table_beautifier/main": true,
+    "skip-traceback/main": true,
+    "toc2/main": true,
+    "hide_input/main": true,
+    "codefolding/main": true,
+    "hide_input_all/main": true,
+    "hide_header/main": true,
+    "export_embedded/main": false,
+    "splitcell/splitcell": false,
+    "freeze/main": true,
+    "latex_envs/latex_envs": false,
+    "collapsible_headings/main": true,
+    "code_prettify/autopep8": true,
+    "notify/notify": false,
+    "hinterland/hinterland": false,
+    "autosavetime/main": true,
+    "comment-uncomment/main": false,
+    "scroll_down/main": true,
+    "ruler/main": false,
+    "zenmode/main": false,
+    "keyboard_shortcut_editor/main": true,
+    "navigation-hotkeys/main": true,
+    "python-markdown/main": true,
+    "autoscroll/main": true,
+    "printview/main": true,
+    "toggle_all_line_numbers/main": true,
+    "gist_it/main": true,
+    "scratchpad/main": true,
+    "ipycanvas/extension": true,
+    "ipyevents/extension": true
+  },
+  "toc2": {
+    "skip_h1_title": true,
+    "toc_cell": false,
+    "title_cell": "Contents",
+    "number_sections": true,
+    "sideBar": false,
+    "markTocItemOnScroll": true,
+    "navigate_menu": true,
+    "collapse_to_match_collapsible_headings": true,
+    "moveMenuLeft": false,
+    "toc_window_display": false,
+    "widenNotebook": false
+  },
+  "snippets": {
+    "include_custom_menu": false,
+    "custom_menu_content": "",
+    "include_submenu": {
+      "h5py": false,
+      "numpy": false,
+      "scipy": false,
+      "sympy": false,
+      "matplotlib": false,
+      "pandas": false,
+      "astropy": false,
+      "numba": false,
+      "python": false,
+      "markdown": false
+    },
+    "top_level_submenu_goes_left": true,
+    "insert_as_new_cell": false,
+    "insert_before_sibling": false
+  },
+  "Cell": {
+    "cm_config": {
+      "lineNumbers": true
+    }
+  },
+  "Notebook": {
+    "Header": false,
+    "Toolbar": true
+  },
+  "notify": {
+    "sticky": false
+  },
+  "hinterland": {
+    "hint_delay": "500"
+  },
+  "scrollDownIsEnabled": false,
+  "autosavetime_show_selector": false,
+  "autosavetime_set_starting_interval": true,
+  "keys": {
+    "command": {
+      "bind": {
+        "alt-m": "jupyter-notebook:toggle-menubar"
+      }
+    }
+  },
+  "autoscroll_show_selector": false,
+  "autoscroll_show_button": true,
+  "autosavetime_starting_interval": "3",
+  "codefolding_hotkey": "alt-f",
+  "collapsible_headings": {
+    "toggle_color": "#489cc7"
+  },
+  "printview_nbconvert_options": "--to html",
+  "gist_it_personal_access_token": "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",
+  "gist_it_default_to_public": true,
+  "Freeze": {
+    "readonly_color": "#f7f7f7",
+    "frozen_color": "#c7f0e8"
+  }
+}

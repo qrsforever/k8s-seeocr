@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  seeocr:
+    image: hzcsk8s.io/seeocr
+    build:
+      dockerfile: dockerfile/Dockerfile.seeocr
+
+  seeocr_jupyter:
+    image: hzcsk8s.io/seeocr_jupyter
+    build:
+      dockerfile: dockerfile/Dockerfile.seeocr_jupyter
+
+
