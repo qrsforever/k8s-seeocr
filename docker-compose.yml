@@ -6,10 +6,10 @@ services:
         build:
           dockerfile: dockerfile/Dockerfile.paddle_cpu
 
-    paddle_cuda111:
-        image: hzcsk8s.io/seeocr_paddle_cuda111
+    paddle_gpu:
+        image: hzcsk8s.io/seeocr_paddle_gpu
         build:
-          dockerfile: dockerfile/Dockerfile.paddle_cuda111
+          dockerfile: dockerfile/Dockerfile.paddle_gpu
 
     seeocr:
         image: hzcsk8s.io/seeocr

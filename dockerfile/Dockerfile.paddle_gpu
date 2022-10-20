@@ -1,4 +1,4 @@
-FROM hzcsk8s.io/opencv_cpu
+FROM hzcsk8s.io/opencv_cuda111
 
 WORKDIR /app
 EXPOSE 2828
@@ -15,7 +15,6 @@ RUN apt update \
         kafka-python \
         python-snappy \
         cos-python-sdk-v5 \
-        shapely pyclipper \
-    && python3 -m pip install paddlepaddle==2.4.0rc0 -i https://pypi.tuna.tsinghua.edu.cn/simple
+    && python3 -m pip install paddlepaddle-gpu==2.4.0rc0.post111 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
 
 ADD app /app
