@@ -1,14 +1,22 @@
 version: "3"
 
 services:
-  seeocr:
-    image: hzcsk8s.io/seeocr
-    build:
-      dockerfile: dockerfile/Dockerfile.seeocr
+    paddle_cpu:
+        image: hzcsk8s.io/seeocr_paddle_cpu
+        build:
+          dockerfile: dockerfile/Dockerfile.paddle_cpu
 
-  seeocr_jupyter:
-    image: hzcsk8s.io/seeocr_jupyter
-    build:
-      dockerfile: dockerfile/Dockerfile.seeocr_jupyter
+    paddle_cuda111:
+        image: hzcsk8s.io/seeocr_paddle_cuda111
+        build:
+          dockerfile: dockerfile/Dockerfile.paddle_cuda111
 
+    seeocr:
+        image: hzcsk8s.io/seeocr
+        build:
+            dockerfile: dockerfile/Dockerfile.seeocr
 
+    seeocr_jupyter:
+        image: hzcsk8s.io/seeocr_jupyter
+        build:
+          dockerfile: dockerfile/Dockerfile.seeocr_jupyter
