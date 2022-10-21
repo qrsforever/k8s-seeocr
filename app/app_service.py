@@ -15,10 +15,8 @@ import signal
 import os
 import traceback
 
-from queue import Empty
 from flask import Flask
 from flask_cors import CORS
-from multiprocessing import Event, Queue
 
 from seeocr.utils.errcodes import HandlerError
 from seeocr.utils.logger import logger_subprocess
@@ -171,14 +169,14 @@ if __name__ == "__main__":
         kafka_subproc, exit_event, msg_queue = None, None, None
 
         if args.task == 'seeocr.det':
-            from seeocr.det.db import ocr_db_detect as message_handler
+            from seeocr.det.db import ocr_detect as message_handler
             topic_in, topic_out = topic, 'seeocr_rec_input'
         elif args.task == 'seeocr.rec':
-            from seeocr.rec import yyy as message_handler
+            from seeocr.rec.svtr_lcnet import ocr_recognize as message_handler
             topic_in, topic_out = 'seeocr_rec_input', 'seeocr_rec_output'
         elif args.task == 'seeocr.post':
             from seeocr.post import xxx as message_handler
-            topic_in, topic_out = 'seeocr_rec_output', None
+            topic_in, topic_out = 'seeocr_output', None
         else:
             raise RuntimeError(f'{args.task} is not support')
 

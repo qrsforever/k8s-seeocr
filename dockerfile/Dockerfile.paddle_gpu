@@ -8,6 +8,7 @@ RUN apt update \
     && $APT_INSTALL \
         iputils-ping net-tools \
         curl \
+    && ldconfig \
     && rm -rf /var/lib/apt/lists/* \
     && $PIP_INSTALL \
         flask \
@@ -17,4 +18,8 @@ RUN apt update \
         cos-python-sdk-v5 \
     && python3 -m pip install paddlepaddle-gpu==2.4.0rc0.post111 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
 
+# TODO
+RUN apt update && $APT_INSTALL libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev 
+
+ADD ckpts /ckpts
 ADD app /app

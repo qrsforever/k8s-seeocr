@@ -13,6 +13,7 @@ import paddle
 import numpy as np
 from shapely.geometry import Polygon
 import pyclipper
+from seeocr.utils.logger import EasyLogger as logger # noqa
 
 
 class DBPostProcess(object):
@@ -272,12 +273,41 @@ def sorted_boxes(dt_boxes):
     return _boxes
 
 
-def seeocr_det_postprocess(det_outs, shape_list, image_shape, thresh, box_thresh, unclip_ratio):
+def get_rotate_crop_image(img, points):
+    img_crop_width = int(
+        max(
+            np.linalg.norm(points[0] - points[1]),
+            np.linalg.norm(points[2] - points[3])))
+    img_crop_height = int(
+        max(
+            np.linalg.norm(points[0] - points[3]),
+            np.linalg.norm(points[1] - points[2])))
+    pts_std = np.float32([[0, 0], [img_crop_width, 0],
+                          [img_crop_width, img_crop_height],
+                          [0, img_crop_height]])
+    M = cv2.getPerspectiveTransform(points, pts_std)
+    dst_img = cv2.warpPerspective(
+        img,
+        M, (img_crop_width, img_crop_height),
+        borderMode=cv2.BORDER_REPLICATE,
+        flags=cv2.INTER_CUBIC)
+    dst_img_height, dst_img_width = dst_img.shape[0:2]
+    if dst_img_height * 1.0 / dst_img_width >= 1.5:
+        dst_img = np.rot90(dst_img)
+    return dst_img
+
+
+def seeocr_det_postprocess(det_outs, shape_list, rawimg, thresh, box_thresh, unclip_ratio):
     preds = {'maps': det_outs}
     process = DBPostProcess(thresh, box_thresh, unclip_ratio=unclip_ratio)
     results = process(preds, shape_list)
-    if len(results) > 0:
-        results = filter_tag_det_res(results[0]['points'], image_shape)
-        return sorted_boxes(results)
-    else:
+    if len(results) == 0:
         return []
+    points = results[0]['points']
+    results = filter_tag_det_res(points, rawimg.shape)
+    boxes = sorted_boxes(results)
+    img_crop_list = []
+    for tmp_box in boxes:
+        img_crop = get_rotate_crop_image(rawimg, tmp_box)
+        img_crop_list.append(img_crop)
+    return img_crop_list, points

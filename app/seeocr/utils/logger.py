@@ -18,6 +18,8 @@ from contextlib import contextmanager
 
 from . import SingletonType
 
+# multiprocessing.set_start_method('spawn')
+
 
 class MultiProcessingLogHandler(logging.Handler, metaclass=SingletonType):
     def __init__(self, name, handlers=None):
@@ -189,7 +191,7 @@ def logger_subprocess(func, *args):
     logger = EasyLogger.get()
 
     def _target(logger, *args):
-        from frepai.utils.logger import EasyLogger
+        from seeocr.utils.logger import EasyLogger
         EasyLogger.set(logger)
         func(*args)
 

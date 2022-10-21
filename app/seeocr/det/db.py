@@ -10,6 +10,7 @@
 from paddle import inference
 import time
 import numpy as np
+import pickle
 import cv2
 import os
 import json
@@ -24,7 +25,7 @@ from .augimg import seeocr_det_transforms
 from .postprocess import seeocr_det_postprocess
 
 
-DET_CKPTS_PATH = '/ckpts/det_db/Student/'
+DET_CKPTS_PATH = '/ckpts/det_db/Student'
 
 det_config = inference.Config(f'{DET_CKPTS_PATH}/inference.pdmodel', f'{DET_CKPTS_PATH}/inference.pdiparams')
 det_config.disable_gpu()
@@ -40,13 +41,13 @@ input_tensor = predictor.get_input_handle(predictor.get_input_names()[0])
 output_tensor = predictor.get_output_handle(predictor.get_output_names()[0])
 
 
-def ocr_db_detect(args, progress_cb=None):
+def ocr_detect(args, progress_cb=None):
     if 'dev_args' in args and len(args['dev_args']) > 0:
         args.update(json.loads(args['dev_args']))
 
     args = DotDict(args)
 
-    resdata = {'errno': 0, 'pigeon': args.pigeon, 'devmode': False, 'task': 'det', 'upload_files': []}
+    resdata = {'errno': 0, 'pigeon': args.pigeon, 'devmode': False, 'task': 'seeocr.det', 'upload_files': []}
 
     def _send_progress(x):
         if progress_cb:
@@ -58,9 +59,9 @@ def ocr_db_detect(args, progress_cb=None):
 
     suffix = args.source[-3:]
     if 'https://' in args.source:
-        segs = args.video[8:].split('/')
+        segs = args.source[8:].split('/')
         vname = segs[-1].split('.')[0]
-        coss3_path = os.path.join('/', *segs[1:-2], 'outputs', vname, 'repnet_tf')
+        coss3_path = os.path.join('/', *segs[1:-2], 'outputs', vname, 'seeocr')
     else:
         vname = 'unknow'
         coss3_path = '' # noqa
@@ -84,10 +85,17 @@ def ocr_db_detect(args, progress_cb=None):
 
     if suffix == 'mp4':
         raise NotImplementedError
+
+    max_side_len = args.get('det_max_side_len', 320)
+    thresh = args.get('det_thresh', 3)
+    box_thresh = args.get('det_box_thresh', 0.6)
+    unclip_ratio = args.get('det_unclip_ratio', 1.5)
     
     _send_progress(20)
     img_bgr = cv2.imread(source_path, cv2.IMREAD_COLOR)
-    image, shape = seeocr_det_transforms(img_bgr, args.max_side_len)
+    image, shape = seeocr_det_transforms(img_bgr, max_side_len)
+
+    logger.info(f'{image.shape}, {shape.tolist()}')
 
     images = np.expand_dims(image, axis=0)
     shapes = np.expand_dims(shape, axis=0)
@@ -98,20 +106,27 @@ def ocr_db_detect(args, progress_cb=None):
     det_outs = output_tensor.copy_to_cpu()
 
     _send_progress(80)
-    thresh = args.get('det_thresh', 3)
-    box_thresh = args.get('det_box_thresh', 0.6)
-    unclip_ratio = args.get('det_unclip_ratio', 1.5)
-    boxes = seeocr_det_postprocess(det_outs, shapes, image.shape, thresh, box_thresh, unclip_ratio)
-    nb_boxes = np.array(boxes)
+    boxes, _ = seeocr_det_postprocess(det_outs, shapes, img_bgr, thresh, box_thresh, unclip_ratio)
 
-    if len(nb_boxes) > 0:
-        np.save(f'{cache_path}/det_boxes.npy', np.asarray(nb_boxes))
+    resdata['det_boxes_count'] = len(boxes)
+    if len(boxes) == 0:
+        logger.error('no boxes detect')
+        resdata['progress'] = 100
+        if progress_cb:
+            progress_cb(resdata)
+        rmdir_p(os.path.dirname(cache_path))
+        return None
+
+    with open(f'{cache_path}/det_boxes.pkl', 'wb') as fw:
+        pickle.dump(boxes, fw)
 
     with open(f'{cache_path}/config.json', 'w') as f:
         f.write(json.dumps(dict(args)))
 
     resdata['upload_files'].append('config.json')
     resdata['coss3_path'] = coss3_path
+    resdata['rec_batch_num'] = args.get('rec_batch_num', 6)
+    resdata['rec_image_shape'] = args.get('rec_image_shape', (3, 48, 320))
 
     _send_progress(100)
     return resdata

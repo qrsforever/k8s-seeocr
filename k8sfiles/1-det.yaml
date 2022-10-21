@@ -1,0 +1,88 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: seeocr-det-service
+  namespace: seeocr
+spec:
+  selector:
+    app: seeocr-det-app
+  ports:
+    - port: 21717
+      targetPort: 2828
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: seeocr-det-deployment
+  namespace: seeocr
+  labels:
+    app: seeocr-det-app
+spec:
+  selector:
+    matchLabels:
+      app: seeocr-det-app
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: seeocr-det-app
+        log: seeocr
+    spec:
+      containers:
+        - name: seeocr-det
+          image: hzcsk8s.io/seeocr_paddle_cpu
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 2828
+          command: ["/bin/bash"]
+          args: ["-c", "python3 app_service.py --task seeocr.det"]
+
+          env:
+            - name: KAFKA_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: seeocr-kafka-cm
+                  key: kafka_host
+
+            - name: KAFKA_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: seeocr-kafka-cm
+                  key: kafka_port
+
+            - name: KAFKA_TOPIC
+              valueFrom:
+                configMapKeyRef:
+                  name: seeocr-kafka-cm
+                  key: seeocr_topic_input
+
+          resources:
+            requests:
+              memory: "2.5Gi"
+              cpu: "0.8"
+            limits:
+              memory: "3Gi"
+              cpu: "0.8"
+
+          livenessProbe:
+            exec:
+              command: ["test", "-e", "/tmp/healthy"]
+            initialDelaySeconds: 5
+            timeoutSeconds: 3
+            periodSeconds: 20
+            failureThreshold: 3
+
+          volumeMounts:
+            - name: k8s-nfs
+              mountPath: /data
+              subPath: seeocr 
+
+      volumes:
+        - name: k8s-nfs
+          persistentVolumeClaim:
+            claimName: seeocr-pvc-nfs
+
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 10
