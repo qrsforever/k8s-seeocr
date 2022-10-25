@@ -31,7 +31,7 @@ spec:
         log: seeocr
     spec:
       containers:
-        - name: seeocr-det
+        - name: seeocr-post
           image: hzcsk8s.io/seeocr_paddle_cpu
           imagePullPolicy: Always
           ports:

@@ -11,6 +11,7 @@ import pickle
 import os
 import json
 import cv2
+import numpy as np
 
 from seeocr.utils.oss import coss3_put, coss3_domain # noqa
 from seeocr.utils.logger import EasyLogger as logger
@@ -74,23 +75,21 @@ def ocr_result(pigeon, progress_cb=None):
     pigeon['ocr_res_json'] = f'{coss3_domain}{coss3_path}/result.json'
 
     if devmode:
-        det_points = pigeon['det_points']
+        det_points = np.asarray(np.load(f'{cache_path}/det_points.npy'))
         source_path = pigeon['source_path']
         image = cv2.imread(source_path, cv2.IMREAD_COLOR)
         for pts in det_points:
-            box = pts.reshape((-1, 1, 2))
+            box = pts.reshape((-1, 1, 2)).astype(np.int64)
             image = cv2.polylines(image, [box], True, (255, 0, 0), 2)
-        cv2.imwrite(source_path, image)
-        pigeon['upload_files'].append(source_path)
-        pigeon['ocr_res_json'] = f'{coss3_domain}{coss3_path}/result.json'
+        cv2.imwrite(f'{cache_path}/det_boxes.png', image)
+        pigeon['upload_files'].append('det_boxes.png')
+        pigeon['draw_det_boxes'] = f'{coss3_domain}{coss3_path}/det_boxes.png'
 
     _send_progress(90)
     if coss3_path:
         prefix_map = [cache_path, coss3_path]
         for fn in pigeon['upload_files']:
-            if not os.path.exists(fn):
-                fn = f'{cache_path}/{fn}'
-            coss3_put(fn, prefix_map)
+            coss3_put(f'{cache_path}/{fn}', prefix_map)
 
     _send_progress(100)
     rmdir_p(os.path.dirname(cache_path))

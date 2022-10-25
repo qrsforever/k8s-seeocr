@@ -25,14 +25,14 @@ from seeocr.utils import rmdir_p
 
 SHORT_HOSTNAME = socket.gethostname()[-5:]
 
-logger.setup_logger(f'frepai-{SHORT_HOSTNAME}', mp=True)
+logger.setup_logger(f'seeocr-{SHORT_HOSTNAME}', mp=True)
 
 
 class KafkaBreakError(Exception):
     pass
 
 
-def _repnet_main_process(host, port, topic_in, topic_out, message_handler):
+def _seeocr_main_process(host, port, topic_in, topic_out, message_handler):
     from kafka import KafkaConsumer
     from kafka import KafkaProducer
     from kafka.errors import KafkaTimeoutError
@@ -183,7 +183,7 @@ if __name__ == "__main__":
         else:
             raise RuntimeError(f'{args.task} is not support')
 
-        with logger_subprocess(_repnet_main_process,
+        with logger_subprocess(_seeocr_main_process,
                 khost, int(kport),
                 topic_in, topic_out,
                 message_handler) as proc:

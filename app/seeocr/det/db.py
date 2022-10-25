@@ -128,11 +128,9 @@ def ocr_detect(args, progress_cb=None):
         f.write(json.dumps(dict(args)))
 
     if devmode:
-        resdata['det_points'] = points
+        np.save(f'{cache_path}/det_points.npy', points)
     resdata['upload_files'].append('config.json')
     resdata['coss3_path'] = coss3_path
-    # resdata['ocr_keys'] = ocr_keys
-    # resdata['process_code'] = args.get('process_code', '')
     resdata['rec_batch_num'] = args.get('rec_batch_num', 6)
     resdata['rec_image_shape'] = args.get('rec_image_shape', (3, 48, 320))
 
