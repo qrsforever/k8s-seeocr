@@ -1,11 +1,11 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: seeocr-rec-service
+  name: seeocr-post-service
   namespace: seeocr
 spec:
   selector:
-    app: seeocr-rec-app
+    app: seeocr-post-app
   ports:
     - port: 21616
       targetPort: 2828
@@ -15,29 +15,29 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: seeocr-rec-deployment
+  name: seeocr-post-deployment
   namespace: seeocr
   labels:
-    app: seeocr-rec-app
+    app: seeocr-post-app
 spec:
   selector:
     matchLabels:
-      app: seeocr-rec-app
+      app: seeocr-post-app
   replicas: 1
   template:
     metadata:
       labels:
-        app: seeocr-rec-app
+        app: seeocr-post-app
         log: seeocr
     spec:
       containers:
-        - name: seeocr-rec
-          image: hzcsk8s.io/seeocr_paddle_gpu
+        - name: seeocr-det
+          image: hzcsk8s.io/seeocr_paddle_cpu
           imagePullPolicy: Always
           ports:
             - containerPort: 2828
           command: ["/bin/bash"]
-          args: ["-c", "python3 app_service.py --task seeocr.rec"]
+          args: ["-c", "python3 app_service.py --task seeocr.post"]
 
           env:
             - name: KAFKA_HOST
@@ -53,15 +53,19 @@ spec:
                   key: kafka_port
 
           resources:
+            requests:
+              memory: "2.5Gi"
+              cpu: "0.8"
             limits:
-              nvidia.com/gpu: 1
+              memory: "3Gi"
+              cpu: "0.8"
 
           livenessProbe:
             exec:
               command: ["test", "-e", "/tmp/healthy"]
             initialDelaySeconds: 5
             timeoutSeconds: 3
-            periodSeconds: 30
+            periodSeconds: 20
             failureThreshold: 3
 
           volumeMounts:
@@ -70,17 +74,9 @@ spec:
               subPath: seeocr
 
       volumes:
-      - name: k8s-nfs
-        persistentVolumeClaim:
-          claimName: seeocr-pvc-nfs
+        - name: k8s-nfs
+          persistentVolumeClaim:
+            claimName: seeocr-pvc-nfs
 
       restartPolicy: Always
       terminationGracePeriodSeconds: 10
-
-      tolerations:
-        - key: nvidia.com/gpu
-          operator: Exists
-          effect: NoSchedule
-
-      # nodeSelector:
-      #   accelerator: "nvidia-tesla-t4"

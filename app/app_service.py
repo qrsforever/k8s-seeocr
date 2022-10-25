@@ -110,6 +110,9 @@ def _repnet_main_process(host, port, topic_in, topic_out, message_handler):
                 if result is not None:
                     if topic_out:
                         _safe_send(topic_out, result)
+                        continue
+                if 'cache_path' in value and not value.get('devmode', False):
+                    rmdir_p(value['cache_path'])
             except HandlerError as err0:
                 _send_errmsg(value, err0.code, err0.message)
             except json.decoder.JSONDecodeError as err1:
@@ -175,8 +178,8 @@ if __name__ == "__main__":
             from seeocr.rec.svtr_lcnet import ocr_recognize as message_handler
             topic_in, topic_out = 'seeocr_rec_input', 'seeocr_rec_output'
         elif args.task == 'seeocr.post':
-            from seeocr.post import xxx as message_handler
-            topic_in, topic_out = 'seeocr_output', None
+            from seeocr.ocr_post_res import ocr_result as message_handler
+            topic_in, topic_out = 'seeocr_rec_output', None
         else:
             raise RuntimeError(f'{args.task} is not support')
 

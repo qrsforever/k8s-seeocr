@@ -1,0 +1,19 @@
+[
+    {
+        "cfg": {
+            "pigeon": {
+                "msgkey": "seeocr_output"
+            },
+            "source": "https://datasets-1301930378.cos.ap-beijing.myqcloud.com/notebook/seeocr/images/seeocr-test-2.png",
+            "devmode": true,
+            "ocr_keys": ["产品型号", "生产人数", "线别", "标准节拍", "生产时间", "实际节拍", "计划产量", "实际产量", "不良率", "完成率"],
+            "det_max_side_len": 800,
+            "det_thresh": 0.3,
+            "det_box_trhesh": 0.6,
+            "det_unclip_ratio": 1.5,
+            "rec_batch_num": 6,
+            "rec_image_shape": [3, 48, 320],
+            "process_code": "results = {}\nfor i in range(len(ocr_res) - 1):\n    reskey = ocr_res[i][0].strip()\n    resval = ocr_res[i + 1][0].strip()\n    for key in ocr_keys:\n        if key in reskey:\n            for val in ocr_keys:\n                if val in resval:\n                    resval = resval.replace(val, '')\n                    break\n            results[key] = resval\n            break"
+        }
+    }
+]

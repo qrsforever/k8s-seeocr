@@ -46,8 +46,12 @@ def ocr_detect(args, progress_cb=None):
         args.update(json.loads(args['dev_args']))
 
     args = DotDict(args)
+    ocr_keys = args.get('ocr_keys', None)
+    if ocr_keys is None or len(ocr_keys) == 0:
+        raise HandlerError(80011, f'ocr_keys is None!')
 
-    resdata = {'errno': 0, 'pigeon': args.pigeon, 'devmode': False, 'task': 'seeocr.det', 'upload_files': []}
+    devmode = args.get('devmode', False)
+    resdata = {'errno': 0, 'pigeon': args.pigeon, 'devmode': devmode, 'task': 'seeocr.det', 'upload_files': []}
 
     def _send_progress(x):
         if progress_cb:
@@ -87,10 +91,10 @@ def ocr_detect(args, progress_cb=None):
         raise NotImplementedError
 
     max_side_len = args.get('det_max_side_len', 320)
-    thresh = args.get('det_thresh', 3)
+    thresh = args.get('det_thresh', 0.3)
     box_thresh = args.get('det_box_thresh', 0.6)
     unclip_ratio = args.get('det_unclip_ratio', 1.5)
-    
+
     _send_progress(20)
     img_bgr = cv2.imread(source_path, cv2.IMREAD_COLOR)
     image, shape = seeocr_det_transforms(img_bgr, max_side_len)
@@ -106,7 +110,7 @@ def ocr_detect(args, progress_cb=None):
     det_outs = output_tensor.copy_to_cpu()
 
     _send_progress(80)
-    boxes, _ = seeocr_det_postprocess(det_outs, shapes, img_bgr, thresh, box_thresh, unclip_ratio)
+    boxes, points = seeocr_det_postprocess(det_outs, shapes, img_bgr, thresh, box_thresh, unclip_ratio)
 
     resdata['det_boxes_count'] = len(boxes)
     if len(boxes) == 0:
@@ -123,8 +127,12 @@ def ocr_detect(args, progress_cb=None):
     with open(f'{cache_path}/config.json', 'w') as f:
         f.write(json.dumps(dict(args)))
 
+    if devmode:
+        resdata['det_points'] = points
     resdata['upload_files'].append('config.json')
     resdata['coss3_path'] = coss3_path
+    # resdata['ocr_keys'] = ocr_keys
+    # resdata['process_code'] = args.get('process_code', '')
     resdata['rec_batch_num'] = args.get('rec_batch_num', 6)
     resdata['rec_image_shape'] = args.get('rec_image_shape', (3, 48, 320))
 

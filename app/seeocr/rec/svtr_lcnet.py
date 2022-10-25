@@ -60,6 +60,7 @@ def ocr_recognize(pigeon, progress_cb=None):
             progress_cb(pigeon)
             logger.info(f"{round(x, 2)} {pigeon['progress']}")
 
+    _send_progress(2)
     with open(f'{cache_path}/det_boxes.pkl', 'rb') as fr:
         det_boxes = pickle.load(fr)
     boxes_num = len(det_boxes)
@@ -73,6 +74,7 @@ def ocr_recognize(pigeon, progress_cb=None):
     rec_image_shape = pigeon['rec_image_shape']
     rec_wh_ratio = rec_image_shape[2] / rec_image_shape[1]
 
+    _send_progress(10)
     for beg_img_no in range(0, boxes_num, batch_num):
         end_img_no = min(boxes_num, beg_img_no + batch_num)
         max_wh_ratio = rec_wh_ratio
@@ -94,4 +96,9 @@ def ocr_recognize(pigeon, progress_cb=None):
         for rno in range(len(rec_result)):
             rec_res[indices[beg_img_no + rno]] = rec_result[rno]
     logger.info(f'{rec_res}')
-    return None
+
+    _send_progress(80)
+    with open(f'{cache_path}/rec_res.pkl', 'wb') as fw:
+        pickle.dump(rec_res, fw)
+    _send_progress(100)
+    return pigeon
