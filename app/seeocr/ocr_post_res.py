@@ -70,7 +70,7 @@ def ocr_result(pigeon, progress_cb=None):
         raise HandlerError(82005, f'exec ocr_ocde fail!')
 
     with open(f'{cache_path}/result.json', 'w') as fw:
-        json.dump(json_result, fw, indent=4)
+        json.dump(json_result, fw, indent=4, ensure_ascii=False)
     pigeon['upload_files'].append('result.json')
     pigeon['ocr_res_json'] = f'{coss3_domain}{coss3_path}/result.json'
 
@@ -90,7 +90,7 @@ def ocr_result(pigeon, progress_cb=None):
         prefix_map = [cache_path, coss3_path]
         for fn in pigeon['upload_files']:
             coss3_put(f'{cache_path}/{fn}', prefix_map)
-
+    pigeon.pop('upload_files')
     _send_progress(100)
     rmdir_p(os.path.dirname(cache_path))
     logger.info(f'{pigeon}')
