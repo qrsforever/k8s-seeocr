@@ -20,6 +20,7 @@ from seeocr.utils.easydict import DotDict
 from seeocr.utils.logger import EasyLogger as logger
 from seeocr.utils.errcodes import HandlerError # noqa
 from seeocr.utils import mkdir_p, rmdir_p, easy_wget # noqa
+from seeocr.utils.draw import get_rect_points
 
 from .augimg import seeocr_det_transforms
 from .postprocess import seeocr_det_postprocess
@@ -97,6 +98,18 @@ def ocr_detect(args, progress_cb=None):
 
     _send_progress(20)
     img_bgr = cv2.imread(source_path, cv2.IMREAD_COLOR)
+    height, width = img_bgr.shape[:2]
+
+    black_box = get_rect_points(width, height, args.get('black_box', [0, 0, 0, 0]))
+    if black_box is not None:
+        black_x1, black_y1, black_x2, black_y2 = black_box
+        img_bgr[black_y1:black_y2, black_x1:black_x2, :] = 0
+    focus_box = get_rect_points(width, height, args.get('focus_box', [0, 0, 1, 1]))
+    if focus_box is not None:
+        focus_x1, focus_y1, focus_x2, focus_y2 = focus_box
+        img_bgr = img_bgr[focus_y1:focus_y2, focus_x1:focus_x2, :]
+        cv2.imwrite(source_path, img_bgr)
+
     image, shape = seeocr_det_transforms(img_bgr, max_side_len)
 
     logger.info(f'{image.shape}, {shape.tolist()}')
