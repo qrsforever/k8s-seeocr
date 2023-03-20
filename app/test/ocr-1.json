@@ -1,0 +1,20 @@
+[
+    {
+        "cfg": {
+            "pigeon": {
+                "msgkey": "seeocr_output"
+            },
+            "source": "https://datasets-1301930378.cos.ap-beijing.myqcloud.com/notebook/seeocr/images/ocr-4.png",
+            "devmode": true,
+            "dev_args": "",
+            "ocr_keys": ["产品计数", "品计数", "当前状", "当前状态", "当前联态"],
+            "det_max_side_len": 800,
+            "det_thresh": 0.3,
+            "det_box_trhesh": 0.6,
+            "det_unclip_ratio": 1.5,
+            "rec_batch_num": 6,
+            "rec_image_shape": [3, 48, 320],
+            "process_code": "results = {}\nfor i in range(len(ocr_res) - 1):\n    reskey = ocr_res[i][0].strip()\n    resval = ocr_res[i + 1][0].strip()\n    for key in ocr_keys:\n        if key in reskey:\n            for val in ocr_keys:\n                if val in resval:\n                    resval = resval.replace(val, '')\n                    break\n            results[key] = resval\n            break"
+        }
+    }
+]
